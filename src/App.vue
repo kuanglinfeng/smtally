@@ -1,7 +1,6 @@
 <template>
   <div>
     <router-view  />
-    <hr />
   </div>
 </template>
 
@@ -10,6 +9,11 @@
 </script>
 
 <style lang="scss">
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box!important;
+  }
   #app {
     font-family: Avenir, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
