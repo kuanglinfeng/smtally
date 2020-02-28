@@ -1,7 +1,7 @@
 <template>
-  <div>Labels
-    <Nav />
-  </div>
+  <Layout>
+    Labels
+  </Layout>
 </template>
 
 <script lang="ts">
@@ -9,7 +9,3 @@
     name: 'Labels'
   }
 </script>
-
-<style scoped lang="scss">
-
-</style>
