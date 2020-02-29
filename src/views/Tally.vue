@@ -1,8 +1,7 @@
 <template>
   <Layout class-prefix="layout">
-    {{ record }}
-    <NumberPad @update:value="onUpdateAmount" @submit="saveRecord"/>
-    <Types :value.sync="record.type"/>
+    <NumberPad @update:value="onUpdateAmount" @submit="saveRecord" />
+    <Types :value.sync="record.type" />
     <Notes @update:value="onUpdateNotes" />
     <Tags :data-source.sync="tags" @update:value="onUpdateTags" />
   </Layout>
@@ -16,19 +15,23 @@
   import Notes from '@/components/Tally/Notes.vue'
   import Tags from '@/components/Tally/Tags.vue'
 
+
   type Record = {
     tags: string[]
     notes: string
     type: string
     amount: number
+    createdAt?: Date
   }
+
+  const recordList: Record[] = JSON.parse(window.localStorage.getItem('recordList') || '[]')
 
   @Component({
     components: { Notes, Types, NumberPad, Tags }
   })
   export default class Tally extends Vue {
     tags = ['衣', '食', '住', '行']
-    recordList: Record[] = []
+    recordList: Record[] = recordList
     record: Record = {
       tags: [], notes: '', type: '-', amount: 0
     }
@@ -46,13 +49,14 @@
     }
 
     saveRecord() {
-      this.recordList.push({...this.record})
-      console.log(this.recordList)
+      const record: Record = JSON.parse(JSON.stringify(this.record))
+      record.createdAt = new Date()
+      this.recordList.push(record)
     }
 
     @Watch('recordList')
     onRecordListChange() {
-      window.localStorage.setItem('recordList', JSON.stringify(this.recordList ))
+      window.localStorage.setItem('recordList', JSON.stringify(this.recordList))
     }
   }
 
