@@ -1,13 +1,13 @@
 
 const localStorageKeyName = 'recordList'
 
-const model = {
+const recordListModel = {
   clone(data: RecordItem[] | RecordItem) {
     return JSON.parse(JSON.stringify(data))
   },
   // 获取数据
   fetch() {
-    return JSON.parse(window.localStorage.getItem('recordList') || '[]') as RecordItem[]
+    return JSON.parse(window.localStorage.getItem(localStorageKeyName) || '[]') as RecordItem[]
   },
   // 保存数据
   save(data: RecordItem[]) {
@@ -16,4 +16,4 @@ const model = {
 }
 
 
-export default model
+export default recordListModel

@@ -14,15 +14,17 @@
   import Types from '@/components/Tally/Types.vue'
   import Notes from '@/components/Tally/Notes.vue'
   import Tags from '@/components/Tally/Tags.vue'
-  import model from '@/model'
+  import recordListModel from '@/models/recordListModel'
+  import tagListModel from '@/models/tagListModel'
 
-  const recordList = model.fetch()
+  const recordList = recordListModel.fetch()
+  const tagList = tagListModel.fetch()
 
   @Component({
     components: { Notes, Types, NumberPad, Tags }
   })
   export default class Tally extends Vue {
-    tags = ['衣', '食', '住', '行']
+    tags = tagList
     recordList: RecordItem[] = recordList
     record: RecordItem = {
       tags: [], notes: '', type: '-', amount: 0
@@ -41,14 +43,14 @@
     }
 
     saveRecord() {
-      const record: RecordItem = model.clone(this.record)
+      const record: RecordItem = recordListModel.clone(this.record)
       record.createdAt = new Date()
       this.recordList.push(record)
     }
 
     @Watch('recordList')
     onRecordListChange() {
-      model.save(this.recordList)
+      recordListModel.save(this.recordList)
     }
   }
 
