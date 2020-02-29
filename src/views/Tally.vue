@@ -3,11 +3,11 @@
     <NumberPad />
     <Types :xxx="333" />
     <Notes />
-    <Tags />
+    <Tags :data-source="tags"/>
   </Layout>
 </template>
 
-<script lang="ts">
+<script lang="js">
   import NumberPad from '@/components/Tally/NumberPad.vue'
   import Types from '@/components/Tally/Types.vue'
   import Notes from '@/components/Tally/Notes.vue'
@@ -15,7 +15,12 @@
 
   export default {
     name: 'Tally',
-    components: { Notes, Types, NumberPad, Tags }
+    components: { Notes, Types, NumberPad, Tags },
+    data() {
+      return {
+        tags: ['衣', '食', '住', '行', '彩票']
+      }
+    }
   }
 </script>
 
