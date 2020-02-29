@@ -53,7 +53,7 @@
       this.output = '0'
     }
     ok() {
-
+      this.$emit('update:value', this.output)
     }
   }
 </script>
