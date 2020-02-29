@@ -14,25 +14,17 @@
   import Types from '@/components/Tally/Types.vue'
   import Notes from '@/components/Tally/Notes.vue'
   import Tags from '@/components/Tally/Tags.vue'
+  import model from '@/model'
 
-
-  type Record = {
-    tags: string[]
-    notes: string
-    type: string
-    amount: number
-    createdAt?: Date
-  }
-
-  const recordList: Record[] = JSON.parse(window.localStorage.getItem('recordList') || '[]')
+  const recordList = model.fetch()
 
   @Component({
     components: { Notes, Types, NumberPad, Tags }
   })
   export default class Tally extends Vue {
     tags = ['衣', '食', '住', '行']
-    recordList: Record[] = recordList
-    record: Record = {
+    recordList: RecordItem[] = recordList
+    record: RecordItem = {
       tags: [], notes: '', type: '-', amount: 0
     }
 
@@ -49,14 +41,14 @@
     }
 
     saveRecord() {
-      const record: Record = JSON.parse(JSON.stringify(this.record))
+      const record: RecordItem = model.clone(this.record)
       record.createdAt = new Date()
       this.recordList.push(record)
     }
 
     @Watch('recordList')
     onRecordListChange() {
-      window.localStorage.setItem('recordList', JSON.stringify(this.recordList))
+      model.save(this.recordList)
     }
   }
 
