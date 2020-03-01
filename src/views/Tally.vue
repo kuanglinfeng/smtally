@@ -15,22 +15,18 @@
 
 <script lang="ts">
   import Vue from 'vue'
-  import { Component, Watch } from 'vue-property-decorator'
+  import { Component } from 'vue-property-decorator'
   import NumberPad from '@/components/Tally/NumberPad.vue'
   import Types from '@/components/Tally/Types.vue'
   import FormItem from '@/components/Tally/FormItem.vue'
   import Tags from '@/components/Tally/Tags.vue'
-  import recordListModel from '@/models/recordListModel'
-  import tagListModel from '@/models/tagListModel'
-
-  const recordList = recordListModel.fetch()
 
   @Component({
     components: { FormItem, Types, NumberPad, Tags }
   })
   export default class Tally extends Vue {
     tags = window.tagList
-    recordList: RecordItem[] = recordList
+    recordList = window.recordList
     record: RecordItem = {
       tags: [], notes: '', type: '-', amount: 0
     }
@@ -48,13 +44,9 @@
     }
 
     saveRecord() {
-      recordListModel.create(this.record)
+      window.createRecord(this.record)
     }
 
-    @Watch('recordList')
-    onRecordListChange() {
-      recordListModel.save()
-    }
   }
 
 
