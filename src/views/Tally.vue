@@ -24,13 +24,12 @@
   import tagListModel from '@/models/tagListModel'
 
   const recordList = recordListModel.fetch()
-  const tagList = tagListModel.fetch()
 
   @Component({
     components: { FormItem, Types, NumberPad, Tags }
   })
   export default class Tally extends Vue {
-    tags = tagList
+    tags = window.tagList
     recordList: RecordItem[] = recordList
     record: RecordItem = {
       tags: [], notes: '', type: '-', amount: 0
