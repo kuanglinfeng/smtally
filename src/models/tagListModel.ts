@@ -2,8 +2,6 @@ import createId from '@/lib/createId'
 
 const localStorageKeyName = 'tagList'
 
-
-
 const tagListModel: TagListModel = {
   data: [],
   // 获取数据
