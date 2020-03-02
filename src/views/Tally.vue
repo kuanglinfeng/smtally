@@ -9,7 +9,7 @@
         placeholder="在这里输入备注"
       />
     </div>
-    <Tags :data-source.sync="tags" @update:value="onUpdateTags" />
+    <Tags />
   </Layout>
 </template>
 
@@ -20,22 +20,22 @@
   import Types from '@/components/Tally/Types.vue'
   import FormItem from '@/components/Tally/FormItem.vue'
   import Tags from '@/components/Tally/Tags.vue'
-  import store from '@/store/index2'
 
   @Component({
-    components: { FormItem, Types, NumberPad, Tags }
+    components: { FormItem, Types, NumberPad, Tags },
   })
   export default class Tally extends Vue {
-    tags = store.tagList
-    recordList = store.recordList
+
+    get recordList() {
+      return this.$store.state.recordList
+    }
+
     record: RecordItem = {
       tags: [], notes: '', type: '-', amount: 0
     }
-
-    onUpdateTags(value: string[]) {
-      this.record.tags = value
+    created() {
+      this.$store.commit('fetchRecords')
     }
-
     onUpdateNotes(value: string) {
       this.record.notes = value
     }
@@ -45,7 +45,7 @@
     }
 
     saveRecord() {
-      store.createRecord(this.record)
+      this.$store.commit('createRecord', this.record)
     }
 
   }
