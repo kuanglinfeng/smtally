@@ -20,13 +20,14 @@
   import Types from '@/components/Tally/Types.vue'
   import FormItem from '@/components/Tally/FormItem.vue'
   import Tags from '@/components/Tally/Tags.vue'
+  import store from '@/store/index2'
 
   @Component({
     components: { FormItem, Types, NumberPad, Tags }
   })
   export default class Tally extends Vue {
-    tags = window.tagList
-    recordList = window.recordList
+    tags = store.tagList
+    recordList = store.recordList
     record: RecordItem = {
       tags: [], notes: '', type: '-', amount: 0
     }
@@ -44,7 +45,7 @@
     }
 
     saveRecord() {
-      window.createRecord(this.record)
+      store.createRecord(this.record)
     }
 
   }
