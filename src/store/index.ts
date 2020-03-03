@@ -19,41 +19,39 @@ const store = new Vuex.Store({
     currentTag: undefined
   } as RootState,
   mutations: {
-    fetchRecords(state) {
+    // 记账的相关操作
+    fetchRecords(state: RootState) {
       state.recordList = JSON.parse(window.localStorage.getItem('recordList') || '[]') as RecordItem[]
     },
-    saveRecords(state) {
+    saveRecords(state: RootState) {
       window.localStorage.setItem('recordList', JSON.stringify(state.recordList))
     },
-    createRecord(state, record) {
-      const record2: RecordItem = clone(record)
-      record2.createdAt = new Date()
-      state.recordList?.push(record)
+    createRecord(state: RootState, record: RecordItem) {
+      const _record: RecordItem = clone(record)
+      _record.createdAt = new Date()
+      state.recordList?.push(_record)
       store.commit('saveRecords')
     },
-
-    fetchTags(state) {
+    // 标签的相关操作
+    fetchTags(state: RootState) {
       state.tagList = JSON.parse(window.localStorage.getItem('tagList') || '[]')
     },
-    saveTags(state) {
+    saveTags(state: RootState) {
       window.localStorage.setItem('tagList', JSON.stringify(state.tagList))
     },
-    createTag(state, name: string) {
+    createTag(state: RootState, name: string) {
       const names = state.tagList.map(item => item.name)
-      if (names.indexOf(name) >= 0) {
-        window.alert('标签名重复了！')
-        return 'duplicated'
-      }
+      if (names.indexOf(name) >= 0) return window.alert('标签名重复了！')
+
       const id = createId().toString()
       state.tagList.push({ id, name: name })
       store.commit('saveTags')
       window.alert('添加成功')
-      return 'success'
     },
-    setCurrentTag(state, id: string) {
+    setCurrentTag(state: RootState, id: string) {
       state.currentTag = state.tagList.filter(tag => tag.id === id)[0]
     },
-    updateTag(state, payload: { id: string, name: string }) {
+    updateTag(state: RootState, payload: { id: string, name: string }) {
       const { id, name } = payload
       const idList = state.tagList.map(item => item.id)
       if (idList.indexOf(id) >= 0) {
@@ -67,7 +65,7 @@ const store = new Vuex.Store({
         }
       }
     },
-    removeTag(state, id: string) {
+    removeTag(state: RootState, id: string) {
       let index = -1
       for (let i = 0; i < state.tagList.length; i++) {
         if (state.tagList[i].id === id) {

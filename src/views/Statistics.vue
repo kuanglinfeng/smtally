@@ -7,6 +7,11 @@
       <br />
       interval: {{ interval }}
     </div>
+    <div>
+      <ol>
+        <li v-for="item in result" :key="item.id">{{ item }}</li>
+      </ol>
+    </div>
   </Layout>
 </template>
 
@@ -21,6 +26,19 @@
     components: { Tabs }
   })
   export default class Statistics extends Vue {
+
+    get recordList() {
+      return this.$store.state.recordList
+    }
+
+    get result() {
+      return this.recordList
+    }
+
+    created() {
+      this.$store.commit('fetchRecords')
+    }
+
     type = '-'
     interval = 'day'
     intervalList = intervalList
@@ -30,13 +48,19 @@
 </script>
 
 <style scoped lang="scss">
-  ::v-deep .type-tabs-item {
-    background: white;
-    &.selected {
-      background: #c4c4c4;
-      &::after {
-        display: none;
+  ::v-deep {
+    .type-tabs-item {
+      background: white;
+      &.selected {
+        background: #c4c4c4;
+        &::after {
+          display: none;
+        }
       }
     }
+    .interval-tabs-item {
+      height: 48px;
+    }
   }
+
 </style>
