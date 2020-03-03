@@ -1,7 +1,6 @@
 <template>
   <Layout class-prefix="layout">
     <NumberPad @update:value="onUpdateAmount" @submit="saveRecord" />
-<!--    <Types :value.sync="record.type" />-->
     <Tabs :data-source="recordTypeList" :value.sync="record.type"/>
     <div class="notes">
       <FormItem
@@ -18,14 +17,13 @@
   import Vue from 'vue'
   import { Component } from 'vue-property-decorator'
   import NumberPad from '@/components/Tally/NumberPad.vue'
-  import Types from '@/components/Tally/Types.vue'
   import FormItem from '@/components/Tally/FormItem.vue'
   import Tags from '@/components/Tally/Tags.vue'
   import recordTypeList from '@/constants/recordTypeList'
   import Tabs from '@/components/Tabs.vue'
 
   @Component({
-    components: { FormItem, Types, NumberPad, Tags, Tabs },
+    components: { FormItem, NumberPad, Tags, Tabs },
   })
   export default class Tally extends Vue {
 
