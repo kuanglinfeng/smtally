@@ -28,13 +28,15 @@ const store = new Vuex.Store({
     },
     createRecord(state: RootState, record: RecordItem) {
       const _record: RecordItem = clone(record)
-      _record.createdAt = new Date()
+      _record.createdAt = new Date().toISOString()
       state.recordList?.push(_record)
       store.commit('saveRecords')
     },
     // 标签的相关操作
     fetchTags(state: RootState) {
       state.tagList = JSON.parse(window.localStorage.getItem('tagList') || '[]')
+      if (!state.tagList || state.tagList.length === 0) {
+      }
     },
     saveTags(state: RootState) {
       window.localStorage.setItem('tagList', JSON.stringify(state.tagList))
