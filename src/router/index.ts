@@ -1,36 +1,62 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Tally from '@/views/Tally.vue'
-import Labels from '@/views/Labels.vue'
-import Statistics from '@/views/Statistics.vue'
+import MyOutlayTag from '@/views/Tally/MyOutlayTagList.vue'
+import MyIncomeTag from '@/views/Tally/MyIncomeTagList.vue'
+import Tally from '@/views/Tally/Tally.vue'
+import OutlayTagList from '@/views/Tally/OutlayTagList.vue'
+import IncomeTagList from '@/IncomeTagList.vue'
+import Detail from '@/views/Detail.vue'
+import Chart from '@/views/Chart.vue'
 import NotFound from '@/views/NotFound.vue'
-import EditLabel from '@/views/EditLabel.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    redirect: '/tally'
+    redirect: '/detail'
   },
   {
     path: '/tally',
-    component: Tally
+    name: 'Tally',
+    component: Tally,
+    redirect: '/tally/outlay',
+    children: [
+      {
+        path: 'outlay',
+        name: 'Outlay',
+        component: MyOutlayTag
+      },
+      {
+        path: 'income',
+        name: 'Income',
+        component: MyIncomeTag
+      },
+    ]
   },
   {
-    path: '/labels',
-    component: Labels
+    path: '/outlayTagList',
+    name: 'OutlayTagList',
+    component: OutlayTagList
   },
   {
-    path: '/labels/edit/:id',
-    component: EditLabel
+    path: '/incomeTagList',
+    name: 'IncomeTagList',
+    component: IncomeTagList
   },
   {
-    path: '/statistics',
-    component: Statistics
+    path: '/detail',
+    name: 'Detail',
+    component: Detail
+  },
+  {
+    path: '/chart',
+    name: 'Chart',
+    component: Chart
   },
   {
     path: '*',
+    name: 'NotFound',
     component: NotFound
   }
 ]

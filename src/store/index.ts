@@ -1,92 +1,78 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import clone from '@/lib/clone'
-import createId from '@/lib/createId'
-import router from '@/router'
+import db from '@/utils/db'
+import clone from '@/utils/clone'
+import createId from '@/utils/createId'
+import { myIncomeTagList, myOutlayTagList } from '@/constants/tagList'
 
 Vue.use(Vuex)
 
 type RootState = {
   recordList: RecordItem[],
-  tagList: Tag[],
-  currentTag?: Tag
+  myOutlayTagList: MyTagList,
+  myIncomeTagList: MyTagList
+}
+
+// 修改记录的payload id表示要修改的记录的id newRecord修改后的新纪录
+type EditRecordPayload = {
+  id: string,
+  newRecord: RecordItem
 }
 
 const store = new Vuex.Store({
   state: {
     recordList: [],
-    tagList: [],
-    currentTag: undefined
+    myOutlayTagList: [],
+    myIncomeTagList: []
   } as RootState,
   mutations: {
-    // 记账的相关操作
-    fetchRecords(state: RootState) {
-      state.recordList = JSON.parse(window.localStorage.getItem('recordList') || '[]') as RecordItem[]
+    fetchMyOutlayTagList(state: RootState) {
+      state.myOutlayTagList = db.get('myOutlayTagList') || [...myOutlayTagList]
     },
-    saveRecords(state: RootState) {
-      window.localStorage.setItem('recordList', JSON.stringify(state.recordList))
+    setMyOutlayTagList(state: RootState, newList: MyTagList) {
+      state.myOutlayTagList = [...newList]
+      db.set('myOutlayTagList', JSON.stringify(state.myOutlayTagList))
     },
-    createRecord(state: RootState, record: RecordItem) {
-      const _record: RecordItem = clone(record)
-      _record.createdAt = new Date().toISOString()
-      state.recordList?.push(_record)
-      store.commit('saveRecords')
+    fetchMyIncomeTagList(state: RootState) {
+      state.myIncomeTagList = db.get('myIncomeTagList') || [...myIncomeTagList]
     },
-    // 标签的相关操作
-    fetchTags(state: RootState) {
-      state.tagList = JSON.parse(window.localStorage.getItem('tagList') || '[]')
-      if (!state.tagList || state.tagList.length === 0) {
-      }
+    setMyIncomeTagList(state: RootState, newList: MyTagList) {
+      state.myIncomeTagList = [...newList]
+      db.set('myIncomeTagList', JSON.stringify(state.myIncomeTagList))
     },
-    saveTags(state: RootState) {
-      window.localStorage.setItem('tagList', JSON.stringify(state.tagList))
-    },
-    createTag(state: RootState, name: string) {
-      const names = state.tagList.map(item => item.name)
-      if (names.indexOf(name) >= 0) return window.alert('标签名重复了！')
 
-      const id = createId().toString()
-      state.tagList.push({ id, name: name })
-      store.commit('saveTags')
-      window.alert('添加成功')
+    // record operation
+    fetchRecords(state: RootState) {
+      state.recordList = db.get('recordList') || []
     },
-    setCurrentTag(state: RootState, id: string) {
-      state.currentTag = state.tagList.filter(tag => tag.id === id)[0]
+    addRecord(state: RootState, record: RecordItem) {
+      const r: RecordItem = clone(record)
+      r.id = createId()
+      r.date = new Date().toISOString()
+      state.recordList && state.recordList.push(r)
+      db.set('recordList', JSON.stringify(state.recordList))
     },
-    updateTag(state: RootState, payload: { id: string, name: string }) {
-      const { id, name } = payload
-      const idList = state.tagList.map(item => item.id)
-      if (idList.indexOf(id) >= 0) {
-        const names = state.tagList.map(item => item.name)
-        if (names.indexOf(name) >= 0) {
-          window.alert('标签吗重复了')
-        } else {
-          const tag = state.tagList.filter(item => item.id === id)[0]
-          tag.name = name
-          store.commit('saveTags')
-        }
-      }
+    removeRecord(state: RootState, id: string) {
+      if (state.recordList.length === 0) return
+      const index: number = state.recordList.findIndex(record => record.id === id)
+      if (index === -1) return
+      const _recordList = clone(state.recordList)
+      _recordList.splice(index, 1)
+      db.set('recordList', JSON.stringify(_recordList))
     },
-    removeTag(state: RootState, id: string) {
-      let index = -1
-      for (let i = 0; i < state.tagList.length; i++) {
-        if (state.tagList[i].id === id) {
-          index = i
-          break
-        }
-      }
-      if (index >= 0) {
-        state.tagList.splice(index, 1)
-        store.commit('saveTags')
-        router.back()
-      } else {
-        window.alert('删除失败')
-      }
-    },
+    editRecord(state: RootState, payload: EditRecordPayload) {
+      const { id, newRecord } = payload
+      store.commit('removeRecord', id)
+      store.commit('fetchRecords')
+      let _recordList = clone(state.recordList)
+      newRecord.id = id
+      newRecord.date = new Date().toISOString()
+      _recordList.push(newRecord)
+      db.set('recordList', JSON.stringify(_recordList))
+    }
   },
   actions: {},
   modules: {}
 })
-
 
 export default store

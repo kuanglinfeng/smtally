@@ -1,12 +1,21 @@
+
 type RecordItem = {
-  tags: Tag[]
-  notes: string
-  type: string
+  id?: string
+  // + 表示收入 - 表示支出
+  type: '+' | '-'
+  tag: Tag
+  notes?: string
   amount: number
-  createdAt?: string
+  date?: string
 }
 
 type Tag = {
-  id: string
-  name: string
+  text: string
+  value: string
+}
+
+type MyTagList = Tag[]
+
+type TagList = {
+  [key: string]: Tag[]
 }

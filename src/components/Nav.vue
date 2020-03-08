@@ -1,24 +1,26 @@
 <template>
   <nav>
-    <router-link to="/labels" class="item" active-class="selected">
-      <Icon name="labels"/>
-      标签
+    <router-link to="/detail" class="item" active-class="selected">
+      <Icon value="detail"/>
+      明细
     </router-link>
     <router-link to="/tally" class="item" active-class="selected">
-      <Icon name="tally"/>
+      <Icon value="tally"/>
       记账
     </router-link>
-    <router-link to="/statistics" class="item" active-class="selected">
-      <Icon name="statistics"/>
-      统计
+    <router-link to="/chart" class="item" active-class="selected">
+      <Icon value="chart"/>
+      图表
     </router-link>
   </nav>
 </template>
 
 <script lang="ts">
+  import Icon from '@/components/Icon.vue'
 
   export default {
-    name: 'Nav'
+    name: 'Nav',
+    components: {Icon}
   }
 </script>
 
@@ -42,7 +44,7 @@
       }
     }
     > .item.selected{
-      color: $color-highlight;
+      color: darken($primary-color, 20%);
     }
   }
 </style>
