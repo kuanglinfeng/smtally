@@ -37,10 +37,19 @@
         this.myTagList = this.$store.state.myOutlayTagList
         this.selectedTag = this.$store.state.myOutlayTagList[0]
       }
+      this.submit()
     }
+
+    submit() {
+      if (this.selectedTag.value === 'setting') {
+        this.selectedTag = {value: 'other', text: '其它'}
+      }
+      this.$emit('update:value', this.selectedTag)
+    }
+
     onSelect(tag: Tag) {
       this.selectedTag = tag
-      this.$emit('update:value', tag)
+      this.submit()
     }
   }
 </script>
