@@ -23,3 +23,19 @@ button, input {
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
 }
+
+select {
+  border: none;
+  outline: none;
+  background: inherit;
+  appearance: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+option {
+  font-weight: normal;
+  display: block;
+  white-space: pre;
+  min-height: 1.2em;
+}
