@@ -62,13 +62,13 @@
           <Blank />
         </div>
         <div v-else class="items">
-          <router-link to="#" v-for="record in showList" :key="record.id">
+          <router-link :to="'/detail/edit/' + record.id" v-for="record in showList" :key="record.id">
             <div class="tag">
               <Icon :value="record.tag.value" />
               <span>{{ record.tag.text }}</span>
             </div>
-            <div class="amount">{{ record.type === '+' ? '+' + record.amount.toFixed(2) : '-' + record.amount.toFixed(2)
-              }}
+            <div class="amount">
+              {{ record.type === '+' ? '+' + record.amount.toFixed(2) : '-' + record.amount.toFixed(2) }}
             </div>
           </router-link>
         </div>

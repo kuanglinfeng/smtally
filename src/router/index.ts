@@ -6,6 +6,7 @@ import Tally from '@/views/Tally/Tally.vue'
 import OutlayTagList from '@/views/Tally/OutlayTagList.vue'
 import IncomeTagList from '@/IncomeTagList.vue'
 import Detail from '@/views/Detail.vue'
+import EditRecord from '@/views/EditRecord.vue'
 import Chart from '@/views/Chart.vue'
 import NotFound from '@/views/NotFound.vue'
 
@@ -48,6 +49,11 @@ const routes = [
     path: '/detail',
     name: 'Detail',
     component: Detail
+  },
+  {
+    path: '/detail/edit/:id',
+    name: 'EditRecord',
+    component: EditRecord
   },
   {
     path: '/chart',

@@ -10,7 +10,8 @@ Vue.use(Vuex)
 type RootState = {
   recordList: RecordItem[],
   myOutlayTagList: MyTagList,
-  myIncomeTagList: MyTagList
+  myIncomeTagList: MyTagList,
+  record: RecordItem
 }
 
 // 修改记录的payload id表示要修改的记录的id newRecord修改后的新纪录
@@ -23,7 +24,8 @@ const store = new Vuex.Store({
   state: {
     recordList: [],
     myOutlayTagList: [],
-    myIncomeTagList: []
+    myIncomeTagList: [],
+    record: {} as RecordItem
   } as RootState,
   mutations: {
     fetchMyOutlayTagList(state: RootState) {
@@ -44,6 +46,9 @@ const store = new Vuex.Store({
     // record operation
     fetchRecords(state: RootState) {
       state.recordList = db.get('recordList') || []
+    },
+    getRecord(state: RootState, id: string) {
+      state.record = state.recordList.filter(record => record.id === id)[0]
     },
     addRecord(state: RootState, record: RecordItem) {
       const r: RecordItem = clone(record)
@@ -66,7 +71,7 @@ const store = new Vuex.Store({
       store.commit('fetchRecords')
       let _recordList = clone(state.recordList)
       newRecord.id = id
-      newRecord.date = new Date().toISOString()
+      if (!newRecord.date) newRecord.date = new Date().toISOString()
       _recordList.push(newRecord)
       db.set('recordList', JSON.stringify(_recordList))
     }
