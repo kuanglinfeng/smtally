@@ -3,6 +3,9 @@ import App from './App.vue'
 import './registerServiceWorker'
 import router from './router'
 import store from './store'
+import ECharts from 'echarts'
+
+Vue.prototype.$echarts = ECharts
 
 Vue.config.productionTip = false
 
