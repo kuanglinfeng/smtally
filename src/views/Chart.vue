@@ -25,6 +25,8 @@
         <span v-else-if="interval ==='month'">本月</span>
         <span v-else>今年</span>
       </div>
+      <div class="total">{{ this.type === '-' ? '支出' : '收入' }}总额: ¥{{1111}}</div>
+      <div class="average">{{ this.type === '-' ? '支出' : '收入' }}均额: ¥{{22}}</div>
       <div id="graph"></div>
     </main>
   </Layout>
@@ -32,10 +34,12 @@
 
 <script lang="ts">
   import Vue from 'vue'
-  import { Component } from 'vue-property-decorator'
+  import { Component, Watch } from 'vue-property-decorator'
   import Layout from '@/components/Layout.vue'
   import Icon from '@/components/Icon.vue'
+  import Day from '@/utils/Day'
 
+  const day = new Day(new Date())
 
   type DataItem = {
     name: string,
@@ -49,18 +53,101 @@
     public $echarts: any
 
     typeList: DataItem[] = [
-      {name: '支出', value: '-'},
-      {name: '收入', value: '+'}
+      { name: '支出', value: '-' },
+      { name: '收入', value: '+' }
     ]
 
     intervalList: DataItem[] = [
-      {name: '周', value: 'week'},
-      {name: '月', value: 'month'},
-      {name: '年', value: 'year'},
+      { name: '周', value: 'week' },
+      { name: '月', value: 'month' },
+      { name: '年', value: 'year' },
     ]
 
     type: '+' | '-' = '-'
     interval: 'week' | 'month' | 'year' = 'week'
+
+    created() {
+      this.$store.commit('fetchRecords')
+    }
+
+    private mounted() {
+      const ele = document.getElementById('graph')
+      const chart: any = this.$echarts.init(ele as HTMLDivElement)
+      chart.setOption(this.options)
+      console.log(this.recordList)
+    }
+
+    get recordList(): RecordItem[] {
+      return this.$store.state.recordList
+    }
+
+    @Watch('type')
+    onTypeChange() {
+      console.log(this.groupByWeek(this.filterRecordsByWeek(this.filterRecordsByType(this.type))))
+      console.log(this.groupByMonth(this.filterRecordsByMonth(this.filterRecordsByType(this.type))))
+    }
+
+    @Watch('interval')
+    onIntervalChange() {
+      console.log(this.groupByWeek(this.filterRecordsByWeek(this.filterRecordsByType(this.type))))
+      console.log(this.groupByMonth(this.filterRecordsByMonth(this.filterRecordsByType(this.type))))
+      // console.log(this.filterRecordsByMonth())
+    }
+
+    filterRecordsByType(type: '+' | '-') {
+      return this.recordList.filter(record => record.type === type)
+    }
+
+    filterRecordsByWeek(records: RecordItem[]) {
+      return records.filter(record => day.isSameWeek(new Date(record.date as string)))
+    }
+
+    filterRecordsByMonth(records: RecordItem[]) {
+      return records.filter(record => day.isSameMonth(new Date(record.date as string)))
+    }
+
+    filterRecordsByYear() {
+      return this.recordList.filter(record => day.isSameYear(new Date(record.date as string)))
+    }
+
+    // 将过滤后的记录集分组 并且返回指定的数据格式[{key: string, value: number}, ...]
+    groupByWeek(records: RecordItem[]): Map<string, number> {
+      const keys = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+      const result = new Map<string, number>()
+      for (let i = 0; i < keys.length; i++) {
+        result.set(keys[i], 0)
+      }
+      let r: RecordItem
+      for (r of records) {
+        const key = keys[new Date(r.date as string).getDay()]
+        const amount = result.get(key) as number
+        result.set(key, amount + r.amount)
+      }
+      return result
+    }
+
+    groupByMonth(records: RecordItem[]): Map<string, number> {
+      const result = new Map<string, number>()
+      const date = new Date()
+      const year = date.getFullYear()
+      // 0 表示 1月
+      const month = date.getMonth() + 1
+      const days = Day.getDaysByYearAndMonth(year, month)
+      for (let i = 1; i <= days; i++) {
+        result.set(i.toString(), 0)
+      }
+      let r: RecordItem
+      for (r of records) {
+        const key = new Date(r.date as string).getDate().toString()
+        const amount = result.get(key) as number
+        result.set(key, amount + r.amount)
+      }
+      return result
+    }
+
+    groupByYear() {
+
+    }
 
     onToggleInterval(interval: string) {
       this.interval = interval as 'week' | 'month' | 'year'
@@ -137,7 +224,7 @@
         bottom: '10%'
       },
       xAxis: {
-        data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"],
+        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
         axisTick: {
           interval: 0,
           lineStyle: {
@@ -166,15 +253,31 @@
       },
       series: [{
         type: 'line',
-        data: [5, 20, 36, 10, 10, 20]
+        data: [10, 20, 30, 40, 50, 60, 70]
+      }, {
+        name: '最大值',
+        type: 'line',
+        data: this.toArray(70, 7),
+        symbol: 'none',
+        lineStyle: {
+          color: '#999999',
+          width: 1,
+          opacity: 0.5
+        }
+      }, {
+        name: '平均值',
+        type: 'line',
+        data: this.toArray(40, 7),
+        symbol: 'none',
+        lineStyle: {
+          color: '#999999',
+          width: 1,
+          opacity: 0.5
+        }
       }]
     }
 
-    private mounted() {
-      const ele = document.getElementById('graph')
-      const chart: any = this.$echarts.init(ele as HTMLDivElement)
-      chart.setOption(this.options)
-    }
+
   }
 
 </script>
@@ -233,6 +336,19 @@
         padding: 8px 16px;
         font-size: 14px;
       }
+    }
+    > .total {
+      font-size: 14px;
+      color: #999999;
+      text-align: left;
+      padding: 6px 6px;
+    }
+    > .average {
+      font-size: 12px;
+      color: #999999;
+      text-align: left;
+      padding: 0 6px;
+      margin-bottom: 16px;
     }
     > #graph {
       width: 100%;

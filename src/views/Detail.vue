@@ -209,6 +209,9 @@
           .income > .title, .outlay > .title {
             @extend %miniFont;
           }
+          .income > .value, .outlay > .value {
+            margin-left: 2px;
+          }
         }
       }
     }

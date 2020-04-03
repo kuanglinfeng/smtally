@@ -2,19 +2,24 @@ class Day {
   constructor(private date: Date) {
     this.date = date
   }
+
   // 获取年-月-日
   getDate(): string {
     return this.date.toISOString().split('T')[0]
   }
+
   getYear(): string {
     return this.getDate().split('-')[0]
   }
+
   getMonth(): string {
     return this.getDate().split('-')[1]
   }
+
   getDay(): string {
     return this.getDate().split('-')[2]
   }
+
   // 获取过去二十年的年份数组
   getPastTwentyYears(): string[] {
     const current = this.date.getFullYear()
@@ -24,10 +29,12 @@ class Day {
     }
     return result
   }
+
   // 是否是闰年
   static isLeapYear(year: number): boolean {
     return year / 4 === 0 && year / 100 !== 0 || year / 400 === 0
   }
+
   // 获取某年某月的天数
   static getDaysByYearAndMonth(year: number, month: number): number {
     if (month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12) {
@@ -41,5 +48,29 @@ class Day {
     }
     return 30
   }
+
+  // 判断某个日期是否和当前日期是在同一周
+  isSameWeek(date: Date) {
+    // 获取如YYYY/MM/DD的日期
+    const dateStr = date.toLocaleDateString()
+    const nowDate = this.date
+    const nowTime = nowDate.getTime()
+    const nowDay = nowDate.getDay()
+    for (let i = 0; i < 7; i++) {
+      if (dateStr === (new Date(nowTime + (i - nowDay) * 24 * 3600 * 1000)).toLocaleDateString()) return true
+    }
+    return false
+  }
+
+  // 判断某个日期是否和当前日期在同一月
+  isSameMonth(date: Date) {
+    return (this.date.getFullYear() === date.getFullYear() && this.date.getMonth() === date.getMonth())
+  }
+
+  // 判断某个日期是否和当前日期在同一年
+  isSameYear(date: Date) {
+    return this.date.getFullYear() === date.getFullYear()
+  }
 }
+
 export default Day
