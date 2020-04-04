@@ -1,3 +1,5 @@
+import init = echarts.init
+
 class Day {
   constructor(public date: Date) {
     this.date = date
@@ -53,7 +55,13 @@ class Day {
 
   // 判断某个日期是否和当前日期是在同一周
   isSameWeek(date: Date) {
-    return Math.abs(this.date.getTime() - date.getTime()) <= 7 * 24 * 3600 * 1000
+    const oneDay = 24 * 3600 * 1000
+    // 从1970年1月1日（星期四）后开始的第一个星期一是 1970年1月5日，以这一天作为第一周的起点
+    const initDate = new Date(4 * oneDay)
+    const initTime = initDate.getTime()
+    const week = parseInt((date.getTime() - initTime) / (7 * oneDay) + '')
+    const nowWeek = parseInt((this.date.getTime() - initTime) / (7 * oneDay) + '')
+    return week === nowWeek
   }
 
   // 判断某个日期是否和当前日期在同一月
