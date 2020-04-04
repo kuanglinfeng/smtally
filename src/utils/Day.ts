@@ -53,15 +53,7 @@ class Day {
 
   // 判断某个日期是否和当前日期是在同一周
   isSameWeek(date: Date) {
-    // 获取如YYYY/MM/DD的日期
-    const dateStr = date.toLocaleDateString()
-    const nowDate = this.date
-    const nowTime = nowDate.getTime()
-    const nowDay = nowDate.getDay()
-    for (let i = 0; i < 7; i++) {
-      if (dateStr === (new Date(nowTime + (i - nowDay) * 24 * 3600 * 1000)).toLocaleDateString()) return true
-    }
-    return false
+    return Math.abs(this.date.getTime() - date.getTime()) <= 7 * 24 * 3600 * 1000
   }
 
   // 判断某个日期是否和当前日期在同一月

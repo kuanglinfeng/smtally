@@ -100,6 +100,7 @@
     init() {
       const records = this.filterRecordsByWeek(this.filterRecordsByType(this.type))
       this.renderChartData = this.groupByWeek(records)
+      console.log(this.renderChartData)
       this.topTenRecords = this.getTopTenRecords(records)
     }
 
@@ -170,7 +171,8 @@
       }
       let r: RecordItem
       for (r of records) {
-        const key = keys[new Date(r.date as string).getDay()]
+        const d = new Date(r.date as string)
+        const key = keys[new Date(d.getTime() - 8 * 3600 * 1000).getDay()]
         const amount = result.get(key) as number
         result.set(key, amount + r.amount)
         totalAmount += r.amount
