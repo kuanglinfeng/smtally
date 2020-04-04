@@ -17,7 +17,9 @@ class Day {
   }
 
   getDay(): string {
-    return this.getDate().split('-')[2]
+    let str = this.date.getDate().toString()
+    if (str.length === 1) str = '0' + str
+    return str
   }
 
   // 获取过去二十年的年份数组

@@ -25,10 +25,29 @@
         <span v-else-if="interval ==='month'">本月</span>
         <span v-else>今年</span>
       </div>
-      <div class="total">{{ this.type === '-' ? '支出' : '收入' }}总额: ¥{{1111}}</div>
-      <div class="average">{{ this.type === '-' ? '支出' : '收入' }}均额: ¥{{22}}</div>
+      <div class="total">{{ this.type === '-' ? '支出' : '收入' }}总额: ¥{{totalAmount}}</div>
+      <div class="average">{{ this.type === '-' ? '支出' : '收入' }}均额: ¥{{averageAmount}}</div>
       <div id="graph"></div>
     </main>
+    <footer>
+      <div class="caption">{{ type === '+' ? '收入' : '支出' }}排行榜Top10</div>
+      <div v-if="topTenRecords.length === 0">
+        <Blank />
+      </div>
+      <ul class="ranking">
+        <li v-for="record in topTenRecords" :key="record.id">
+          <div class="tag-info">
+            <div class="icon">
+              <Icon :value="record.tag.value" />
+            </div>
+            <span>{{ record.tag.text }}</span>
+            <span class="notes">{{ record.notes }}</span>
+          </div>
+          <div>{{ record.amount }}</div>
+        </li>
+      </ul>
+    </footer>
+
   </Layout>
 </template>
 
@@ -38,6 +57,7 @@
   import Layout from '@/components/Layout.vue'
   import Icon from '@/components/Icon.vue'
   import Day from '@/utils/Day'
+  import Blank from '@/components/Blank.vue'
 
   const day = new Day(new Date())
 
@@ -47,7 +67,7 @@
   }
 
   @Component({
-    components: { Layout, Icon }
+    components: { Blank, Layout, Icon }
   })
   export default class Chart extends Vue {
     public $echarts: any
@@ -66,32 +86,62 @@
     type: '+' | '-' = '-'
     interval: 'week' | 'month' | 'year' = 'week'
 
+    renderChartData: Map<string, number> = new Map<string, number>()
+
+    totalAmount: number = 0
+    averageAmount: number = 0
+
+    topTenRecords: RecordItem[] = []
+
     created() {
       this.$store.commit('fetchRecords')
     }
 
+    init() {
+      const records = this.filterRecordsByWeek(this.filterRecordsByType(this.type))
+      this.renderChartData = this.groupByWeek(records)
+      this.topTenRecords = this.getTopTenRecords(records)
+    }
+
     private mounted() {
-      const ele = document.getElementById('graph')
-      const chart: any = this.$echarts.init(ele as HTMLDivElement)
-      chart.setOption(this.options)
-      console.log(this.recordList)
+      this.init()
+      this.draw()
     }
 
     get recordList(): RecordItem[] {
       return this.$store.state.recordList
     }
 
+    getTopTenRecords(records: RecordItem[]) {
+      const arr = records.sort((a, b) => b.amount - a.amount)
+      if (arr.length > 10) {
+        return arr.slice(0, 10)
+      }
+      return arr
+    }
+
     @Watch('type')
     onTypeChange() {
-      console.log(this.groupByWeek(this.filterRecordsByWeek(this.filterRecordsByType(this.type))))
-      console.log(this.groupByMonth(this.filterRecordsByMonth(this.filterRecordsByType(this.type))))
+      this.onIntervalChange()
+      this.draw()
     }
 
     @Watch('interval')
     onIntervalChange() {
-      console.log(this.groupByWeek(this.filterRecordsByWeek(this.filterRecordsByType(this.type))))
-      console.log(this.groupByMonth(this.filterRecordsByMonth(this.filterRecordsByType(this.type))))
-      // console.log(this.filterRecordsByMonth())
+      if (this.interval === 'week') {
+        this.init()
+      }
+      if (this.interval === 'month') {
+        const records = this.filterRecordsByMonth(this.filterRecordsByType(this.type))
+        this.renderChartData = this.groupByMonth(records)
+        this.topTenRecords = this.getTopTenRecords(records)
+      }
+      if (this.interval === 'year') {
+        const records = this.filterRecordsByYear(this.filterRecordsByType(this.type))
+        this.renderChartData = this.groupByYear(records)
+        this.topTenRecords = this.getTopTenRecords(records)
+      }
+      this.draw()
     }
 
     filterRecordsByType(type: '+' | '-') {
@@ -106,14 +156,15 @@
       return records.filter(record => day.isSameMonth(new Date(record.date as string)))
     }
 
-    filterRecordsByYear() {
-      return this.recordList.filter(record => day.isSameYear(new Date(record.date as string)))
+    filterRecordsByYear(records: RecordItem[]) {
+      return records.filter(record => day.isSameYear(new Date(record.date as string)))
     }
 
     // 将过滤后的记录集分组 并且返回指定的数据格式[{key: string, value: number}, ...]
     groupByWeek(records: RecordItem[]): Map<string, number> {
       const keys = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
       const result = new Map<string, number>()
+      let totalAmount = 0
       for (let i = 0; i < keys.length; i++) {
         result.set(keys[i], 0)
       }
@@ -122,7 +173,13 @@
         const key = keys[new Date(r.date as string).getDay()]
         const amount = result.get(key) as number
         result.set(key, amount + r.amount)
+        totalAmount += r.amount
       }
+      const temp = result.get('周日')
+      result.delete('周日')
+      result.set('周日', temp as number)
+      this.totalAmount = totalAmount
+      this.averageAmount = parseFloat((totalAmount / 7).toFixed(2))
       return result
     }
 
@@ -133,6 +190,7 @@
       // 0 表示 1月
       const month = date.getMonth() + 1
       const days = Day.getDaysByYearAndMonth(year, month)
+      let totalAmount = 0
       for (let i = 1; i <= days; i++) {
         result.set(i.toString(), 0)
       }
@@ -141,18 +199,35 @@
         const key = new Date(r.date as string).getDate().toString()
         const amount = result.get(key) as number
         result.set(key, amount + r.amount)
+        totalAmount += r.amount
       }
+      this.totalAmount = totalAmount
+      this.averageAmount = parseFloat((totalAmount / days).toFixed(2))
       return result
     }
 
-    groupByYear() {
-
+    groupByYear(records: RecordItem[]): Map<string, number> {
+      const keys = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+      const result = new Map<string, number>()
+      let totalAmount = 0
+      for (let i = 0; i < keys.length; i++) {
+        result.set(keys[i], 0)
+      }
+      let r: RecordItem
+      for (r of records) {
+        const key = keys[new Date(r.date as string).getMonth()]
+        const amount = result.get(key) as number
+        result.set(key, amount + r.amount)
+        totalAmount += r.amount
+      }
+      this.totalAmount = totalAmount
+      this.averageAmount = parseFloat((totalAmount / 12).toFixed(2))
+      return result
     }
 
     onToggleInterval(interval: string) {
       this.interval = interval as 'week' | 'month' | 'year'
     }
-
 
     toArray(value: number, length: number): number[] {
       const result: number[] = []
@@ -162,11 +237,12 @@
       return result
     }
 
-    draw(data: Map<string, number>) {
+    draw() {
       // 提取变量
-      const x = [...data.keys()]
-      const y = [...data.values()]
-      const chart = echarts.init(document.getElementById('#chart') as HTMLDivElement)
+      const x = [...this.renderChartData.keys()]
+      const y = [...this.renderChartData.values()]
+      const ele = document.getElementById('graph')
+      const chart: any = this.$echarts.init(ele as HTMLDivElement)
       chart.setOption({
         grid: {
           top: '5%',
@@ -203,81 +279,9 @@
         series: [{
           type: 'line',
           data: y,
-        }, {
-          name: '最大值',
-          type: 'line',
-          data: this.toArray(Math.max(...y), x.length),
-          symbol: 'none',
-          lineStyle: {
-            color: '#999999',
-            width: 1,
-            opacity: 0.5
-          }
         }]
       })
     }
-
-
-    private options: object = {
-      grid: {
-        top: '5%',
-        bottom: '10%'
-      },
-      xAxis: {
-        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-        axisTick: {
-          interval: 0,
-          lineStyle: {
-            opacity: 0
-          }
-        },
-        axisLabel: {
-          interval: 0,
-          fontSize: 6,
-          color: '#999999'
-        }
-      },
-      yAxis: {
-        axisLine: {
-          lineStyle: {
-            opacity: 0
-          }
-        },
-        splitLine: {
-          lineStyle: {
-            opacity: 0
-          }
-        },
-        axisLabel: undefined,
-        axisTick: undefined,
-      },
-      series: [{
-        type: 'line',
-        data: [10, 20, 30, 40, 50, 60, 70]
-      }, {
-        name: '最大值',
-        type: 'line',
-        data: this.toArray(70, 7),
-        symbol: 'none',
-        lineStyle: {
-          color: '#999999',
-          width: 1,
-          opacity: 0.5
-        }
-      }, {
-        name: '平均值',
-        type: 'line',
-        data: this.toArray(40, 7),
-        symbol: 'none',
-        lineStyle: {
-          color: '#999999',
-          width: 1,
-          opacity: 0.5
-        }
-      }]
-    }
-
-
   }
 
 </script>
@@ -353,6 +357,73 @@
     > #graph {
       width: 100%;
       height: 150px;
+    }
+  }
+
+  ::v-deep .icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  ::v-deep .blank {
+    margin-top: 30px;
+  }
+
+  ::v-deep .content {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  footer {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /* 添加这一行 */
+    overflow: auto;
+    .caption {
+      text-align: left;
+      font-size: 14px;
+      padding: 6px 16px;
+    }
+    .ranking {
+      flex-grow: 1;
+      overflow: auto;
+      padding: 6px 16px;
+      > li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        box-shadow: inset 0 -1px 1px -1px rgba(0, 0, 0, .1);
+        font-size: 14px;
+        > .tag-info {
+          display: flex;
+          align-items: center;
+          > div.icon {
+            background: #f5f5f5;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            justify-content: center;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+          }
+          > span {
+            margin-right: 8px;
+            line-height: 32px;
+          }
+          > span.notes {
+            font-size: 12px;
+            color: #bbb;
+            width: 200px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+          }
+        }
+      }
     }
   }
 

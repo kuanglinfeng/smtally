@@ -53,7 +53,8 @@ const store = new Vuex.Store({
     addRecord(state: RootState, record: RecordItem) {
       const r: RecordItem = clone(record)
       r.id = createId()
-      r.date = new Date().toISOString()
+      // 中国标准时区要加8小时
+      r.date = new Date(+new Date() + 8 * 3600 * 1000).toISOString()
       state.recordList && state.recordList.push(r)
       db.set('recordList', JSON.stringify(state.recordList))
     },
