@@ -1,5 +1,5 @@
 class Day {
-  constructor(private date: Date) {
+  constructor(public date: Date) {
     this.date = date
   }
 
