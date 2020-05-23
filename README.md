@@ -14,6 +14,8 @@
 
 https://kuanglinfeng.github.io/smtally-website/
 
+最新版地址：http://smtally.kuanglinfeng.com
+
 # 技术栈
 
 Vue、Vuex、Vue-Router、TypeScript、SCSS、EChart
